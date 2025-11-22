@@ -1,0 +1,67 @@
+services:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka
+    networks:
+      - internal
+    restart: unless-stopped
+
+  storage-service:
+    build:
+      context: ./storage-service
+      dockerfile: Dockerfile
+    container_name: storage-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka
+    networks:
+      - internal
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  api-service:
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
+    container_name: api-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - internal
+    depends_on:
+      - eureka-server
+      - storage-service
+    restart: unless-stopped
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    environment:
+      - EUREKA_URL=http://eureka-server:8761/eureka
+      - GATEWAY_RATE_LIMIT_MAX_REQUESTS=${GATEWAY_RATE_LIMIT_MAX_REQUESTS:-20}
+    networks:
+      - internal
+      - edge
+    depends_on:
+      - eureka-server
+      - api-service
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+networks:
+  edge:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true

@@ -28,6 +28,7 @@ It is designed to be run either from prebuilt container images (docker-compose.y
 - For Development:
   - [JDK 25](https://www.oracle.com/java/technologies/downloads/#jdk25-linux)
   - Gradle
+- JWT Token for testing: instructions below
 
 ### Files
 - .env.example — sample environment; copy to .env and adjust
@@ -37,15 +38,40 @@ It is designed to be run either from prebuilt container images (docker-compose.y
 # Getting started
 1) Clone the repository
    ```shell
-    git clone https://github.com/Milozap/tec-architecture
-    cd tec-architecture
+   git clone https://github.com/Milozap/tec-architecture
+   cd tec-architecture
    ```
 
 2) Prepare environment
    Copy .env.example to .env and update values as needed (make sure to change JWT_SECRET to non-default):
    ```shell
-     cp .env.example .env
+   cp .env.example .env
    ```
+## JWT Token generation
+To use the api and `/movies` endpoints JWT token is required. To generate the token, websites like https://www.jwt.io/ can be used.
+Leave the headers as:
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+Set the payload as, for example: 
+```json
+{
+  "sub": "test-user",
+  "scope": "movies.read movies.write",
+  "iat": 1731950000,
+  "exp": 4731953600
+}
+```
+And set the JWT Secret as secret from .env ("dev-jwt-secret-dev-jwt-secret-dev-jwt-secret-dev-jwt-secret" by default)
+```json
+dev-jwt-secret-dev-jwt-secret-dev-jwt-secret-dev-jwt-secret
+```
+
+Click generate example and copy the jwt token. Then use it with `Authorization: Bearer <token>` header to access api routes.
+
 ## Dev helper script (multi-repo note)
 To run the local build with `docker-compose.dev.yml` all the repos are required. To easily get them run:
 ```shell
@@ -64,7 +90,12 @@ git clone https://github.com/Milozap/tec-gateway-service.git
 
 ## Run with prebuilt images
 ```shell
-  docker compose --env-file .env -f docker-compose.yml up -d
+docker compose --env-file .env -f docker-compose.yml up -d
+```
+
+## Update prebuilt images
+```shell
+docker compose pull
 ```
 
 ## Run with local build - for development
@@ -76,7 +107,7 @@ docker compose --env-file .env -f docker-compose.dev.yml up -d --build
 ### Local development without Docker (per service)
 Each service is a standalone Spring Boot app. From the service directory you can run:
 ```shell
-  ./gradlew bootRun
+./gradlew bootRun
 ```
 
 ### Swagger

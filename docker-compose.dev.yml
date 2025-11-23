@@ -1,7 +1,7 @@
 services:
   eureka-server:
     build:
-      context: ./eureka-server
+      context: ./tec-eureka-server
       dockerfile: Dockerfile
     container_name: eureka-server
     environment:
@@ -13,7 +13,7 @@ services:
 
   storage-service:
     build:
-      context: ./storage-service
+      context: ./tec-storage-service
       dockerfile: Dockerfile
     container_name: storage-service
     environment:
@@ -27,7 +27,7 @@ services:
 
   api-service:
     build:
-      context: ./api-service
+      context: ./tec-api-service
       dockerfile: Dockerfile
     container_name: api-service
     environment:
@@ -43,7 +43,7 @@ services:
 
   gateway-service:
     build:
-      context: ./gateway-service
+      context: ./tec-gateway-service
       dockerfile: Dockerfile
     container_name: gateway-service
     environment:

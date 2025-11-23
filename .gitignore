@@ -1,6 +1,8 @@
-eureka-server/
-storage-service/
-api-service/
-gateway-service/
+/eureka-server/
+/storage-service/
+/api-service/
+/gateway-service/
 
 .idea
+.env
+

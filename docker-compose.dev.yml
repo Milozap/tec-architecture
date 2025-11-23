@@ -1,6 +1,8 @@
 services:
   eureka-server:
-    image: ghcr.io/milozap/tec-eureka-server:latest
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
     container_name: eureka-server
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -10,7 +12,9 @@ services:
     restart: unless-stopped
 
   storage-service:
-    image: ghcr.io/milozap/tec-storage-service:latest
+    build:
+      context: ./storage-service
+      dockerfile: Dockerfile
     container_name: storage-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -22,7 +26,9 @@ services:
     restart: unless-stopped
 
   api-service:
-    image: ghcr.io/milozap/tec-api-service:latest
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
     container_name: api-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -36,7 +42,9 @@ services:
     restart: unless-stopped
 
   gateway-service:
-    image: ghcr.io/milozap/tec-gateway-service:latest
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
     container_name: gateway-service
     environment:
       - EUREKA_URL=http://eureka-server:8761/eureka

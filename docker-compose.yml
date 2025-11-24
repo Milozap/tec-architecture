@@ -8,6 +8,12 @@ services:
     networks:
       - internal
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   storage-service:
     image: ghcr.io/milozap/tec-storage-service:latest
@@ -20,6 +26,12 @@ services:
     depends_on:
       - eureka-server
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   api-service:
     image: ghcr.io/milozap/tec-api-service:latest
@@ -34,6 +46,12 @@ services:
       - eureka-server
       - storage-service
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   gateway-service:
     image: ghcr.io/milozap/tec-gateway-service:latest
@@ -51,6 +69,12 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
 networks:
   edge:

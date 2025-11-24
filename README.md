@@ -101,7 +101,7 @@ Set the payload as, for example:
 }
 ```
 And set the JWT Secret as secret from .env ("dev-jwt-secret-dev-jwt-secret-dev-jwt-secret-dev-jwt-secret" by default)
-```json
+```text
 dev-jwt-secret-dev-jwt-secret-dev-jwt-secret-dev-jwt-secret
 ```
 
@@ -156,6 +156,18 @@ To test swagger requests, please launch api service and use it instead of the ga
 
 ### Health and management endpoints
 - Actuator endpoints are enabled (health, info; additional endpoints in api-service). Access may be limited depending on the environment and security configuration.
+- Docker Compose healthchecks are configured for all services and probe `GET /actuator/health` on the internal container ports:
+  - eureka-server: http://localhost:8761/actuator/health
+  - storage-service: http://localhost:8081/actuator/health
+  - api-service: http://localhost:8082/actuator/health
+  - gateway-service: http://localhost:8080/actuator/health
+  The checks run every 10s with a 3s timeout, 3 retries and a 30s start period to allow JVM warm‑up.
+
+To inspect the status:
+```shell
+docker compose ps
+docker inspect --format='{{json .State.Health}}' <container_name> | jq
+```
 
 # Testing Scenarios
 ```shell

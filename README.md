@@ -9,6 +9,10 @@ It is designed to be run either from prebuilt container images (docker-compose.y
 3. [api-service](https://github.com/Milozap/tec-api-service) — REST API aggregating and calling storage-service, JWT protected
 4. [gateway-service](https://github.com/Milozap/tec-gateway-service) — service routing to api-service with simple rate limiting
 
+### Networks
+- edge – only the Gateway is attached and exposes port 8080 to the host
+- internal – all services communicate here (Gateway, API, Storage, Eureka)
+
 ### Tech stack
 - Language: Java Java 25 
 - Framework: Spring Boot 3.5.x, Spring Cloud 2025.0.0
@@ -119,3 +123,76 @@ Swagger docs available at URL: http://localhost:8080/swagger-ui/index.html
 
 ### Health and management endpoints
 - Actuator endpoints are enabled (health, info; additional endpoints in api-service). Access may be limited depending on the environment and security configuration.
+
+# Testing Scenarios
+```shell
+curl -v "http://localhost:8080/api/movies?page=0&size=5"
+```
+Should return `401 Unauthorized`.
+
+```shell
+curl -v "http://localhost:8080/api/movies?page=0&size=5" -H "Authorization: Bearer <JWT_TOKEN>"
+```
+Should return `200 OK` and a paged list of movies.
+
+```shell
+curl -v "http://localhost:8080/api/movies/1" -H "Authorization: Bearer <JWT_TOKEN>"
+
+```
+Should return `200 OK` and the movie, or `Not Found`.
+
+```shell
+curl -v -X POST "http://localhost:8080/api/movies" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "New Movie",
+    "genre": "New Genre",
+    "releaseYear": 2026
+  }'
+```
+Should return `201 Created` and newly added movie.
+
+```shell
+curl -v -X PUT "http://localhost:8080/api/movies/1" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Movie",
+    "genre": "Updated Genre",
+    "releaseYear": 2019
+  }'
+```
+Should return `200 OK` and updated movie, od `Not Found`.
+
+```shell
+curl -v -X DELETE "http://localhost:8080/api/movies/1" -H "Authorization: Bearer <JWT_TOKEN>"
+```
+Should return `204 No Content` and delete the movie.
+
+### Resilience and chaos testing
+Both storage-service and api-service have `/movies/dev/chaos` urls that can be tested.
+To test it through the gateway:
+```shell
+curl -v "http://localhost:8080/api/movies/dev/chaos?delay=5000&errorRate=0" -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+### Correlation ID
+```shell
+curl -v "http://localhost:8080/api/movies?page=0&size=5" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -H "X-Correlation-ID: test-123"
+```
+Logs for both API and storage will have same `X-Correlation-ID`. 
+If we don't provide `X-Correlation-ID` it will be generated as UUID.
+
+### Rate Limiting
+Example script:
+```shell
+for i in {1..30}; do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    "http://localhost:8080/api/movies?page=0&size=1" \
+    -H "Authorization: Bearer <JWT_TOKEN>"
+done
+```
+The first few responses will have status code `200` and then, after we hit the limit we'll see `429 Too Many Requests`

@@ -39,7 +39,8 @@ services:
     image: ghcr.io/milozap/tec-gateway-service:latest
     container_name: gateway-service
     environment:
-      - EUREKA_URL=http://eureka-server:8761/eureka
+      - EUREKA_URL=${EUREKA_URL:-http://eureka-server:8761/eureka}
+      - GATEWAY_RATE_LIMIT_WINDOW=${GATEWAY_RATE_LIMIT_WINDOW:-10000}
       - GATEWAY_RATE_LIMIT_MAX_REQUESTS=${GATEWAY_RATE_LIMIT_MAX_REQUESTS:-20}
     networks:
       - internal

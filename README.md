@@ -13,6 +13,37 @@ It is designed to be run either from prebuilt container images (docker-compose.y
 - edge – only the Gateway is attached and exposes port 8080 to the host
 - internal – all services communicate here (Gateway, API, Storage, Eureka)
 
+
+```mermaid
+graph TB
+    subgraph "External Network"
+        Client[Client/Browser]
+    end
+    
+    subgraph "Edge Network"
+        Gateway[Gateway Service<br/>Port 8080<br/>Rate Limiting and Routing]
+    end
+    
+    subgraph "Internal Network"
+        Eureka[Eureka Server<br/>Port 8761<br/>Service Registry]
+        API[API Service<br/>Port 8081<br/>JWT Auth<br/>Resilience4j]
+        Storage[Storage Service<br/>Port 8082<br/>H2 Database<br/>Flyway]
+    end
+    
+    Client -->|:8080| Gateway
+    Gateway -.->|Service Discovery| Eureka
+    Gateway -->|Routes /api/**| API
+    API -.->|Service Discovery| Eureka
+    API -->|LoadBalanced<br/> WebClient| Storage
+    Storage -.->|Service Discovery| Eureka
+    
+    style Client fill:#e1f5ff,color:#000000
+    style Gateway fill:#fff4e6,color:#000000
+    style Eureka fill:#f3e5f5,color:#000000
+    style API fill:#e8f5e9,color:#000000
+    style Storage fill:#fce4ec,color:#000000
+```
+
 ### Tech stack
 - Language: Java Java 25 
 - Framework: Spring Boot 3.5.x, Spring Cloud 2025.0.0
@@ -116,6 +147,8 @@ Each service is a standalone Spring Boot app. From the service directory you can
 
 ### Swagger
 Swagger docs available at URL: http://localhost:8080/swagger-ui/index.html
+Note: requests will not work properly on this repo. Swagger on gateway service is purely informative.
+To test swagger requests, please launch api service and use it instead of the gateway service.
 
 ### Configuration notes
 - Services read EUREKA_URL from the environment (defaults to http://localhost:8761/eureka when running without Docker).
